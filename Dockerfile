@@ -1,7 +1,13 @@
-FROM rust:1-slim-bullseye
+FROM node:18-buster-slim
 
-WORKDIR /usr/src/url-shortener
-COPY . /usr/src/url-shortener
-RUN cargo build --release
+WORKDIR /usr/src/app
 
-CMD ["./target/release/url-shortener"]
+COPY package*.json ./
+RUN npm install --only=production
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 8800
+CMD ["node", "./dist/main.js"]

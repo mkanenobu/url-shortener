@@ -1,12 +1,42 @@
 version: "3"
 services:
   redis:
-    image: "redis:latest"
+    image: "redis/redis-stack:latest"
     container_name: url_shortener_redis
     restart: always
     ports:
       - "16379:6379"
-#  rust:
-#    build: .
-#    container_name: rust
-#    restart: always
+  katsubushi:
+    image: "katsubushi/katsubushi:v2.0.1"
+    container_name: url_shortener_katsubushi
+    command: ["-worker-id", "1"]
+    restart: always
+    ports:
+      - "11212:11212"
+  mongodb:
+    image: "mongo:7.0"
+    container_name: url_shortener_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+  cassandra:
+    image: "cassandra:4.1"
+    container_name: url_shortener_cassandra
+    restart: always
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+
+  # このコンテナは開発用ではなく Hot Reload されない
+  node:
+    build: .
+    container_name: url_shortener_node
+    restart: always
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "8800:8800"
+    depends_on:
+      - redis
+      - katsubushi
